@@ -1,17 +1,22 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import './scan-qr-by-code.style.css';
 import {Alert, Button, TextField} from "@mui/material";
-import {QrReader} from 'react-qr-reader'; // source: https://www.npmjs.com/package/react-qr-reader
+// import { QrReader } from 'react-qr-reader'; // source: https://www.npmjs.com/package/react-qr-reader
+import QrReader from 'react-qr-scanner'; // source: https://www.npmjs.com/package/react-qr-scanner
 
 const ScanQrByCode = () => {
 
+    const [mode, setMode] = useState('search');
     const [code, setCode] = useState('');
+
+    const [listCamera, setListCamera] = useState([]);
+    const [cameraId, setCameraId] = useState('');
+
     const [codeVerifier, setCodeVerifier] = useState('');
-    const [facingMode, setFacingMode] = useState<boolean>(true); // default facingMode = user
-    const [mode, setMode] = useState<'search' | 'verify-qr' | 'verify-code' | 'result'>('search');
+
     const [result, setResult] = useState('MATCHED');
 
-    const handlerEnterPress = (event: any, callback: any) => {
+    const handlerEnterPress = (event, callback) => {
         if (event.keyCode === 13) {
             if (!callback || typeof callback != 'function') {
                 console.log('[ScanQrByCode] Enter key pressed but callback not found');
@@ -21,12 +26,12 @@ const ScanQrByCode = () => {
         }
     }
 
-    const onChangeCode = (event: any) => {
+    const onChangeCode = (event) => {
         console.log('[ScanQrByCode] onChangeCode value:', event.target.value);
         setCode(event.target.value);
     }
 
-    const onSubmitCode = (event: any) => {
+    const onSubmitCode = (event) => {
         handlerEnterPress(event, () => {
             console.log('[ScanQrByCode] onSubmitCode value:', event.target.value);
             setCode(event.target.value);
@@ -34,7 +39,7 @@ const ScanQrByCode = () => {
         });
     }
 
-    const verifier = (source: string = '', value: string = '') => {
+    const verifier = (source = '', value = '') => {
         console.log('[ScanQrByCode] searching:', {source, value});
         const verifyKey = source.replace(/#/g,'');
         const testCase = new RegExp(`(${verifyKey})`);
@@ -50,23 +55,33 @@ const ScanQrByCode = () => {
         setMode('result');
     }
 
-    const onScanQr = (result: any, error: any) => {
-        if (!!result) {
-            console.log('[ScanQrByCode] onScanQr result:', {result: result?.text});
-            setCodeVerifier(result?.text)
-        }
-        //
-        // if (!!error) {
-        //     console.info(error);
-        // }
+    // const onScanQr = (result, error) => {
+    //     if (!!result) {
+    //         console.log('[ScanQrByCode] onScanQr result:', {result: result?.text});
+    //         setCodeVerifier(result?.text)
+    //     }
+    //     //
+    //     // if (!!error) {
+    //     //     console.info(error);
+    //     // }
+    // }
+
+    const onScanSuccess = (data) => {
+        console.log('[ScanQrByCode] onScanSuccess result:', {result: data});
+        setCodeVerifier(result?.text)
     }
 
-    const onChangeCodeVerifier = (event: any) => {
+    const onScanError = (error) => {
+        console.log('[ScanQrByCode] onScanError result:', {error});
+        setCodeVerifier('');
+    }
+
+    const onChangeCodeVerifier = (event) => {
         console.log('[ScanQrByCode] onChangeCodeVerifier value:', event.target.value);
         setCodeVerifier(event.target.value);
     }
 
-    const onVerifyCodeManual = (event: any) => {
+    const onVerifyCodeManual = (event) => {
         handlerEnterPress(event, () => {
             console.log('[ScanQrByCode] onVerifyCodeManual value:', event.target.value);
             setCodeVerifier(event.target.value);
@@ -80,8 +95,32 @@ const ScanQrByCode = () => {
     }
 
     const onFlipCamera = () => {
-        setFacingMode(!facingMode);
+        console.log('[ScanQrByCode] onFlipCamera -> list camera and current selected', {listCamera, cameraId});
+        const toggleCamera = listCamera.filter(item => item.deviceId !== cameraId);
+        console.log('[ScanQrByCode] onFlipCamera -> select new camera', {cameraId, newCamera: toggleCamera[0].deviceId});
+        setCameraId(toggleCamera[0].deviceId);
     }
+
+    useEffect(() => {
+        navigator.mediaDevices.enumerateDevices()
+            .then((devices) => {
+                const videoSelect = []
+                devices.forEach((device) => {
+                    if (device.kind === 'videoinput') {
+                        videoSelect.push(device)
+                    }
+                });
+                setListCamera(videoSelect);
+                return videoSelect;
+            })
+            .then((devices) => {
+                setCameraId(devices[0].deviceId);
+                console.log({cameraId: devices[0].deviceId, devices, loading: false});
+            })
+            .catch((error) => {
+                console.log(error);
+            });
+    }, []);
 
     return (
         <div className="center-page">
@@ -108,14 +147,15 @@ const ScanQrByCode = () => {
                         <h3>Mã tài sản: {code}</h3>
                     </div>
 					<QrReader
-						onResult={onScanQr}
-						scanDelay={0}
-						constraints={{facingMode: !facingMode ? 'environment' : 'user'}}
-                        containerStyle={{width: '100%'}}
-					/>
+                        delay={0}
+                        style={{height: 240, width: '100%'}}
+					    onError={onScanError}
+                        onScan={onScanSuccess}
+                        constraints={cameraId && ({ audio: false, video: { deviceId: cameraId } })}
+                    />
 					<div className="div-center">
-						<Button variant="contained" style={{marginRight: '1em'}} onClick={onFlipCamera}>Xoay máy ảnh</Button>
-						<Button variant="contained" onClick={() => setMode('verify-code')}>Nhập tay</Button>
+						<Button variant="contained" onClick={onFlipCamera}>Xoay lại</Button>
+						<Button id="btn-default" variant="contained" onClick={() => setMode('verify-code')}>Nhập tay</Button>
 					</div>
 				</>
             }
@@ -136,7 +176,7 @@ const ScanQrByCode = () => {
 		            />
 			        <div className="div-center">
 				        <Button variant="contained" onClick={() => setMode('verify-qr')}>Quét mã</Button>
-				        <Button variant="contained" style={{marginLeft: '1em'}} onClick={handleVerifyAudit}>Xác thực</Button>
+				        <Button id="btn-default" variant="contained" onClick={handleVerifyAudit}>Xác thực</Button>
 			        </div>
 		        </>
             }
@@ -151,9 +191,9 @@ const ScanQrByCode = () => {
                         }
                     </div>
 					<div className="div-center">
-						<Button variant="contained" onClick={() => setMode('verify-qr')}>Tìm lại</Button>
-						<Button variant="contained" style={{marginLeft: '1em'}} onClick={onResetForm}>Tìm mã khác</Button>
-					</div>
+						<Button id="btn-default" variant="contained" onClick={onResetForm}>Mã khác</Button>
+                        <Button variant="contained" onClick={() => setMode('verify-qr')}>Tìm lại</Button>
+                    </div>
 				</>
             }
         </div>

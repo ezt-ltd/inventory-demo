@@ -11,3 +11,7 @@
     width: 100%;
     text-align: center;
 }
+
+#btn-default {
+    margin: .5em;
+}
