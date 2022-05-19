@@ -35,9 +35,10 @@ const ScanQrByCode = () => {
 
     const verifier = (source: string = '', value: string = '') => {
         console.log('[ScanQrByCode] searching:', {source, value});
-        const testCase = new RegExp(`([${source.replace(/#/g,'')}])\w+`);
+        const verifyKey = source.replace(/#/g,'');
+        const testCase = new RegExp(`(${verifyKey})`);
         console.log('[ScanQrByCode] verify value:', {
-            result: testCase.test(value), algorithm: `([${source.replace(/#/g,'')}])\w+`
+            result: testCase.test(value), algorithm: `(${verifyKey})`
         });
         return testCase.test(value);
     }
