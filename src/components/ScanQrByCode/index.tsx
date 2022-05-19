@@ -7,6 +7,7 @@ const ScanQrByCode = () => {
 
     const [code, setCode] = useState('');
     const [codeVerifier, setCodeVerifier] = useState('');
+    const [facingMode, setFacingMode] = useState<boolean>(true); // default facingMode = user
     const [mode, setMode] = useState<'search' | 'verify-qr' | 'verify-code' | 'result'>('search');
     const [result, setResult] = useState('MATCHED');
 
@@ -78,6 +79,10 @@ const ScanQrByCode = () => {
         setMode('search');
     }
 
+    const onFlipCamera = () => {
+        setFacingMode(!facingMode);
+    }
+
     return (
         <div className="center-page">
             {
@@ -105,9 +110,11 @@ const ScanQrByCode = () => {
 					<QrReader
 						onResult={onScanQr}
 						scanDelay={0}
-						constraints={{facingMode: 'user'}}
+						constraints={{facingMode: !facingMode ? 'environment' : 'user'}}
+                        containerStyle={{width: '100%'}}
 					/>
 					<div className="div-center">
+						<Button variant="contained" style={{marginRight: '1em'}} onClick={onFlipCamera}>Xoay máy ảnh</Button>
 						<Button variant="contained" onClick={() => setMode('verify-code')}>Nhập tay</Button>
 					</div>
 				</>
