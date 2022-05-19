@@ -1,11 +1,12 @@
-import React, {useEffect, useState} from 'react';
+import React, {useState} from 'react';
 import './scan-qr-by-code.style.css';
 import {Alert, Button, TextField} from "@mui/material";
 // import { QrReader } from 'react-qr-reader'; // source: https://www.npmjs.com/package/react-qr-reader
 import QrReader from 'react-qr-scanner'; // source: https://www.npmjs.com/package/react-qr-scanner
 
-const ScanQrByCode = () => {
+const ScanQrByCode = (props) => {
 
+    const {loading, onLoading} = props;
     const [mode, setMode] = useState('search');
     const [code, setCode] = useState('');
 
@@ -15,6 +16,32 @@ const ScanQrByCode = () => {
     const [codeVerifier, setCodeVerifier] = useState('');
 
     const [result, setResult] = useState('MATCHED');
+
+    const cameraProcessing = async () => {
+        onLoading(true);
+        await navigator.mediaDevices.enumerateDevices()
+            .then((devices) => {
+                const videoSelect = []
+                devices.forEach((device) => {
+                    if (device.kind === 'videoinput') {
+                        videoSelect.push(device)
+                    }
+                });
+                setListCamera(videoSelect);
+                return videoSelect;
+            })
+            .then((devices) => {
+                setCameraId(devices[0].deviceId);
+                setTimeout(() => {
+                    onLoading(false);
+                }, 2000);
+                console.log({cameraId: devices[0].deviceId, devices, loading: false});
+            })
+            .catch((error) => {
+                console.log(error);
+                onLoading(false);
+            });
+    }
 
     const handlerEnterPress = (event, callback) => {
         if (event.keyCode === 13) {
@@ -35,6 +62,12 @@ const ScanQrByCode = () => {
         handlerEnterPress(event, () => {
             console.log('[ScanQrByCode] onSubmitCode value:', event.target.value);
             setCode(event.target.value);
+            handleSearching();
+        });
+    }
+
+    const handleSearching = () => {
+        cameraProcessing().finally(() => {
             setMode('verify-qr');
         });
     }
@@ -113,27 +146,6 @@ const ScanQrByCode = () => {
         setCameraId(toggleCamera[0].deviceId);
     }
 
-    useEffect(() => {
-        navigator.mediaDevices.enumerateDevices()
-            .then((devices) => {
-                const videoSelect = []
-                devices.forEach((device) => {
-                    if (device.kind === 'videoinput') {
-                        videoSelect.push(device)
-                    }
-                });
-                setListCamera(videoSelect);
-                return videoSelect;
-            })
-            .then((devices) => {
-                setCameraId(devices[0].deviceId);
-                console.log({cameraId: devices[0].deviceId, devices, loading: false});
-            })
-            .catch((error) => {
-                console.log(error);
-            });
-    }, []);
-
     return (
         <div className="center-page">
             {
@@ -148,7 +160,7 @@ const ScanQrByCode = () => {
 						onKeyDown={onSubmitCode}
 					/>
 					<div className="div-center">
-						<Button variant="contained" onClick={() => setMode('verify-qr')}>Tìm kiếm</Button>
+						<Button variant="contained" onClick={handleSearching}>Tìm kiếm</Button>
 					</div>
 				</>
             }
@@ -158,15 +170,17 @@ const ScanQrByCode = () => {
                     <div className="div-center">
                         <h3>Mã tài sản: {code}</h3>
                     </div>
-					<QrReader
-                        delay={0}
-                        style={{height: 240, width: '100%'}}
-					    onError={onScanError}
-                        onScan={onScanSuccess}
-                        constraints={cameraId && ({ audio: false, video: { deviceId: cameraId } })}
-                    />
+                    {
+                        !loading && <QrReader
+                            delay={0}
+                            style={{height: 240, width: '100%'}}
+                            onError={onScanError}
+                            onScan={onScanSuccess}
+                            constraints={cameraId && ({ audio: false, video: { deviceId: cameraId } })}
+                        />
+                    }
 					<div className="div-center">
-						<Button variant="contained" onClick={onFlipCamera}>Xoay lại</Button>
+                        {!loading && <Button variant="contained" onClick={onFlipCamera}>Xoay lại</Button>}
 						<Button id="btn-default" variant="contained" onClick={() => setMode('verify-code')}>Nhập tay</Button>
 					</div>
 				</>
