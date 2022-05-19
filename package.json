@@ -9,7 +9,7 @@
     "build": "rm -rf ./build && react-scripts build",
     "test": "rm -rf ./coverage && react-scripts test --coverage && node test-report.js",
     "predeploy": "npm run build",
-    "deploy": "gh-pages -b master -d build"
+    "deploy": "gh-pages -d build && rm -rf node_modules/.cache/gh-pages"
   },
   "dependencies": {
     "@emotion/react": "^11.9.0",
