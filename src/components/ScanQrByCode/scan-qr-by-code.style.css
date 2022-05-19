@@ -1,0 +1,13 @@
+.center-page {
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    margin: 10% 40%;
+}
+
+.div-center {
+    margin-top: 1em;
+    width: 100%;
+    text-align: center;
+}
