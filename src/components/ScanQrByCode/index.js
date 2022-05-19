@@ -66,14 +66,20 @@ const ScanQrByCode = () => {
     //     // }
     // }
 
-    const onScanSuccess = (data) => {
-        console.log('[ScanQrByCode] onScanSuccess result:', {result: data});
-        setCodeVerifier(result?.text)
+    const onScanSuccess = async (data) => {
+        if (!data) {
+            return;
+        }
+        console.log('[ScanQrByCode] onScanSuccess result:', {result: data.text || ''});
+        await setCodeVerifier(data.text);
+        await handleVerifyAudit();
     }
 
     const onScanError = (error) => {
-        console.log('[ScanQrByCode] onScanError result:', {error});
-        setCodeVerifier('');
+        // if (error) {
+        //     console.log('[ScanQrByCode] onScanError result:', {error});
+        //     setCodeVerifier('');
+        // }
     }
 
     const onChangeCodeVerifier = (event) => {
@@ -86,6 +92,12 @@ const ScanQrByCode = () => {
             console.log('[ScanQrByCode] onVerifyCodeManual value:', event.target.value);
             setCodeVerifier(event.target.value);
         });
+    }
+
+    const onTryScanner = () => {
+        console.log('[ScanQrByCode] try scanner')
+        setCode('');
+        setMode('verify-qr');
     }
 
     const onResetForm = () => {
@@ -175,7 +187,7 @@ const ScanQrByCode = () => {
 			            onKeyDown={onVerifyCodeManual}
 		            />
 			        <div className="div-center">
-				        <Button variant="contained" onClick={() => setMode('verify-qr')}>Quét mã</Button>
+				        <Button variant="contained" onClick={onTryScanner}>Quét mã</Button>
 				        <Button id="btn-default" variant="contained" onClick={handleVerifyAudit}>Xác thực</Button>
 			        </div>
 		        </>
@@ -192,7 +204,7 @@ const ScanQrByCode = () => {
                     </div>
 					<div className="div-center">
 						<Button id="btn-default" variant="contained" onClick={onResetForm}>Mã khác</Button>
-                        <Button variant="contained" onClick={() => setMode('verify-qr')}>Tìm lại</Button>
+                        <Button variant="contained" onClick={onTryScanner}>Tìm lại</Button>
                     </div>
 				</>
             }
