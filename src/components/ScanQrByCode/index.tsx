@@ -6,6 +6,7 @@ import {QrReader} from 'react-qr-reader'; // source: https://www.npmjs.com/packa
 const ScanQrByCode = () => {
 
     const [code, setCode] = useState('');
+    const [codeVerifier, setCodeVerifier] = useState('');
     const [mode, setMode] = useState<'search' | 'verify-qr' | 'verify-code' | 'result'>('search');
     const [result, setResult] = useState('MATCHED');
 
@@ -19,30 +20,38 @@ const ScanQrByCode = () => {
         }
     }
 
+    const onChangeCode = (event: any) => {
+        console.log('[ScanQrByCode] onChangeCode value:', event.target.value);
+        setCode(event.target.value);
+    }
+
     const onSubmitCode = (event: any) => {
         handlerEnterPress(event, () => {
-            console.log('[ScanQrByCode] value:', event.target.value);
+            console.log('[ScanQrByCode] onSubmitCode value:', event.target.value);
             setCode(event.target.value);
             setMode('verify-qr');
         });
     }
 
-    const search = (source: string = '', value: string = '') => {
+    const verifier = (source: string = '', value: string = '') => {
         console.log('[ScanQrByCode] searching:', {source, value});
-        const testCase = new RegExp(`([${source.replace(/#/g,'')}])\\w+`);
-        console.log('[ScanQrByCode] verify value:', testCase.test(value))
+        const testCase = new RegExp(`([${source.replace(/#/g,'')}])\w+`);
+        console.log('[ScanQrByCode] verify value:', {
+            result: testCase.test(value), algorithm: `([${source.replace(/#/g,'')}])\w+`
+        });
         return testCase.test(value);
     }
 
-    const handleVerifyAudit = (qrData: string = '') => {
-        setResult(search(code, qrData) ? 'MATCHED' : 'NOT MATCH');
+    const handleVerifyAudit = () => {
+        console.log('[ScanQrByCode] verify result:', verifier(code, codeVerifier));
+        setResult(verifier(code, codeVerifier) ? 'MATCHED' : 'NOT MATCH');
         setMode('result');
     }
 
     const onScanQr = (result: any, error: any) => {
         if (!!result) {
-            console.log('[ScanQrByCode] result:', {result: result?.text});
-            handleVerifyAudit(result?.text);
+            console.log('[ScanQrByCode] onScanQr result:', {result: result?.text});
+            setCodeVerifier(result?.text)
         }
         //
         // if (!!error) {
@@ -50,13 +59,20 @@ const ScanQrByCode = () => {
         // }
     }
 
+    const onChangeCodeVerifier = (event: any) => {
+        console.log('[ScanQrByCode] onChangeCodeVerifier value:', event.target.value);
+        setCodeVerifier(event.target.value);
+    }
+
     const onVerifyCodeManual = (event: any) => {
         handlerEnterPress(event, () => {
-            handleVerifyAudit(event.target.value);
+            console.log('[ScanQrByCode] onVerifyCodeManual value:', event.target.value);
+            setCodeVerifier(event.target.value);
         });
     }
 
     const onResetForm = () => {
+        console.log('[ScanQrByCode] form reset')
         setCode('');
         setMode('search');
     }
@@ -71,7 +87,7 @@ const ScanQrByCode = () => {
 						label="Mã trang bị"
 						variant="standard"
 						placeholder="Nhập mã trang bị"
-                        onChange={event => setCode(event.target.value)}
+                        onChange={onChangeCode}
 						onKeyDown={onSubmitCode}
 					/>
 					<div className="div-center">
@@ -107,10 +123,12 @@ const ScanQrByCode = () => {
 			            label="Mã tài sản"
 			            variant="standard"
 			            placeholder="Nhập mã tài sản"
+                        onChange={onChangeCodeVerifier}
 			            onKeyDown={onVerifyCodeManual}
 		            />
 			        <div className="div-center">
 				        <Button variant="contained" onClick={() => setMode('verify-qr')}>Quét mã</Button>
+				        <Button variant="contained" style={{marginLeft: '1em'}} onClick={handleVerifyAudit}>Xác thực</Button>
 			        </div>
 		        </>
             }
