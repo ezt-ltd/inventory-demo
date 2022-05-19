@@ -2,12 +2,14 @@
   "name": "inventory-demo",
   "version": "1.0.0",
   "description": "inventory demo with qr scanner",
+  "homepage": "/inventory-demo",
   "private": true,
   "scripts": {
     "start": "react-scripts start",
     "build": "rm -rf ./build && react-scripts build",
     "test": "rm -rf ./coverage && react-scripts test --coverage && node test-report.js",
-    "deploy": "gh-pages -d build"
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -b master -d build && rm -rf node_modules/.cache/gh-pages"
   },
   "dependencies": {
     "@emotion/react": "^11.9.0",
