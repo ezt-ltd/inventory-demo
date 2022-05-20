@@ -1,8 +1,9 @@
 import React, {useState} from 'react';
-import './scan-qr-by-code.style.css';
-import {Alert, Button, TextField} from "@mui/material";
-// import { QrReader } from 'react-qr-reader'; // source: https://www.npmjs.com/package/react-qr-reader
-import QrReader from 'react-qr-scanner'; // source: https://www.npmjs.com/package/react-qr-scanner
+import './main.style.css';
+import VerifyQrCode from "../../components/VerifyQrCode";
+import VerifyAssetCode from "../../components/VerifyAssetCode";
+import Result from "../../components/Result";
+import Search from "../../components/Search";
 
 const ScanQrByCode = (props) => {
 
@@ -129,13 +130,14 @@ const ScanQrByCode = (props) => {
 
     const onTryScanner = () => {
         console.log('[ScanQrByCode] try scanner')
-        setCode('');
+        setCodeVerifier('');
         setMode('verify-qr');
     }
 
     const onResetForm = () => {
         console.log('[ScanQrByCode] form reset')
         setCode('');
+        setCodeVerifier('');
         setMode('search');
     }
 
@@ -149,78 +151,26 @@ const ScanQrByCode = (props) => {
     return (
         <div className="center-page">
             {
-                (mode === 'search') && <>
-					<TextField
-						fullWidth
-						id="standard-basic"
-						label="Mã trang bị"
-						variant="standard"
-						placeholder="Nhập mã trang bị"
-                        onChange={onChangeCode}
-						onKeyDown={onSubmitCode}
-					/>
-					<div className="div-center">
-						<Button variant="contained" onClick={handleSearching}>Tìm kiếm</Button>
-					</div>
-				</>
+                (mode === 'search') && <Search onChange={onChangeCode} onSubmit={onSubmitCode} onClickSearching={handleSearching} />
             }
 
             {
-                (mode === 'verify-qr') && <>
-                    <div className="div-center">
-                        <h3>Mã tài sản: {code}</h3>
-                    </div>
-                    {
-                        !loading && <QrReader
-                            delay={0}
-                            style={{height: 240, width: '100%'}}
-                            onError={onScanError}
-                            onScan={onScanSuccess}
-                            constraints={cameraId && ({ audio: false, video: { deviceId: cameraId } })}
-                        />
-                    }
-					<div className="div-center">
-                        {!loading && <Button variant="contained" onClick={onFlipCamera}>Xoay lại</Button>}
-						<Button id="btn-default" variant="contained" onClick={() => setMode('verify-code')}>Nhập tay</Button>
-					</div>
-				</>
+                (mode === 'verify-qr') && <VerifyQrCode
+                    loading={loading} assetCode={code} cameraId={cameraId}
+                    onScanSuccess={onScanSuccess} onScanError={onScanError}
+                    onClickFlipCamera={onFlipCamera} onClickManualMode={() => setMode('verify-code')}
+                />
             }
 
             {
-                (mode === 'verify-code') && <>
-		            <div className="div-center">
-			            <h3>Mã tài sản: {code}</h3>
-		            </div>
-		            <TextField
-			            fullWidth
-			            id="standard-basic"
-			            label="Mã tài sản"
-			            variant="standard"
-			            placeholder="Nhập mã tài sản"
-                        onChange={onChangeCodeVerifier}
-			            onKeyDown={onVerifyCodeManual}
-		            />
-			        <div className="div-center">
-				        <Button variant="contained" onClick={onTryScanner}>Quét mã</Button>
-				        <Button id="btn-default" variant="contained" onClick={handleVerifyAudit}>Xác thực</Button>
-			        </div>
-		        </>
+                (mode === 'verify-code') && <VerifyAssetCode
+                    assetCode={code} onChange={onChangeCodeVerifier} onVerify={onVerifyCodeManual}
+                    onClickScanner={onTryScanner} onClickVerify={handleVerifyAudit}
+                />
             }
 
             {
-                (mode === 'result') && <>
-                    <div className="div-center">
-                        {
-                            result === 'MATCHED' ?
-                                <Alert severity="success">{result}</Alert> :
-                                <Alert severity="error">{result}</Alert>
-                        }
-                    </div>
-					<div className="div-center">
-						<Button id="btn-default" variant="contained" onClick={onResetForm}>Mã khác</Button>
-                        <Button variant="contained" onClick={onTryScanner}>Tìm lại</Button>
-                    </div>
-				</>
+                (mode === 'result') && <Result result={result} onClickReset={onResetForm} onClickRetry={onTryScanner} />
             }
         </div>
     );

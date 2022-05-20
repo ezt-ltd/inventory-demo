@@ -1,9 +1,9 @@
 import React, {useEffect, useState} from 'react';
 import './App.css';
-import ScanQrByCode from "./components/ScanQrByCode";
 import {LinearProgress} from "@mui/material";
 import {injectDebugger} from "./utils/utils";
 import * as queryString from "query-string";
+import ScanQrByCode from "./pages/ScanQrByCode";
 
 const App = () => {
 
