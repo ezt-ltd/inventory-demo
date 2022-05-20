@@ -5,16 +5,17 @@ import VerifyAssetCode from "../../components/VerifyAssetCode";
 import Result from "../../components/Result";
 import Search from "../../components/Search";
 
-const ScanQrByCode = (props) => {
+const ScanQrByCode = (props: any) => {
 
-    const {loading, onLoading} = props;
+    const {onLoading} = props;
+
     const [mode, setMode] = useState('search');
-    const [code, setCode] = useState('');
+    const [assetCode, setAssetCode] = useState('');
 
-    const [listCamera, setListCamera] = useState([]);
+    const [listCamera, setListCamera] = useState<Array<any>>([]);
     const [cameraId, setCameraId] = useState('');
 
-    const [codeVerifier, setCodeVerifier] = useState('');
+    const [verifierCode, setVerifierCode] = useState('');
 
     const [result, setResult] = useState('MATCHED');
 
@@ -22,7 +23,7 @@ const ScanQrByCode = (props) => {
         onLoading(true);
         await navigator.mediaDevices.enumerateDevices()
             .then((devices) => {
-                const videoSelect = []
+                const videoSelect: Array<any> = []
                 devices.forEach((device) => {
                     if (device.kind === 'videoinput') {
                         videoSelect.push(device)
@@ -44,7 +45,7 @@ const ScanQrByCode = (props) => {
             });
     }
 
-    const handlerEnterPress = (event, callback) => {
+    const handlerEnterPress = (event: any, callback: any) => {
         if (event.keyCode === 13) {
             if (!callback || typeof callback != 'function') {
                 console.log('[ScanQrByCode] Enter key pressed but callback not found');
@@ -54,15 +55,15 @@ const ScanQrByCode = (props) => {
         }
     }
 
-    const onChangeCode = (event) => {
+    const onChangeCode = (event: any) => {
         console.log('[ScanQrByCode] onChangeCode value:', event.target.value);
-        setCode(event.target.value);
+        setAssetCode(event.target.value);
     }
 
-    const onSubmitCode = (event) => {
+    const onSubmitCode = (event: any) => {
         handlerEnterPress(event, () => {
             console.log('[ScanQrByCode] onSubmitCode value:', event.target.value);
-            setCode(event.target.value);
+            setAssetCode(event.target.value);
             handleSearching();
         });
     }
@@ -75,7 +76,7 @@ const ScanQrByCode = (props) => {
 
     const verifier = (source = '', value = '') => {
         console.log('[ScanQrByCode] searching:', {source, value});
-        const verifyKey = source.replace(/#/g,'');
+        const verifyKey = source.replace(/#/g, '');
         const testCase = new RegExp(`(${verifyKey})`);
         console.log('[ScanQrByCode] verify value:', {
             result: testCase.test(value), algorithm: `(${verifyKey})`
@@ -83,9 +84,14 @@ const ScanQrByCode = (props) => {
         return testCase.test(value);
     }
 
-    const handleVerifyAudit = () => {
-        console.log('[ScanQrByCode] verify result:', verifier(code, codeVerifier));
-        setResult(verifier(code, codeVerifier) ? 'MATCHED' : 'NOT MATCH');
+    const handleVerifyAudit = (directValue: string = '') => {
+        const compareCode = !directValue ? directValue : verifierCode;
+        console.log('[ScanQrByCode] verify result:', {
+            assetCode,
+            compareCode,
+            result: verifier(assetCode, compareCode)
+        });
+        setResult(verifier(assetCode, compareCode) ? 'MATCHED' : 'NOT MATCH');
         setMode('result');
     }
 
@@ -100,79 +106,88 @@ const ScanQrByCode = (props) => {
     //     // }
     // }
 
-    const onScanSuccess = async (data) => {
+    const onScanSuccess = (data: any) => {
         if (!data) {
             return;
         }
-        console.log('[ScanQrByCode] onScanSuccess result:', {result: data.text || ''});
-        await setCodeVerifier(data.text);
-        await handleVerifyAudit();
+        console.log('[ScanQrByCode] onScanSuccess result:', {result: data.text});
+        setVerifierCode(data.text);
+        handleVerifyAudit(data.text);
     }
 
-    const onScanError = (error) => {
+    const onScanError = (error: any) => {
         // if (error) {
         //     console.log('[ScanQrByCode] onScanError result:', {error});
         //     setCodeVerifier('');
         // }
     }
 
-    const onChangeCodeVerifier = (event) => {
+    const onChangeCodeVerifier = (event: any) => {
         console.log('[ScanQrByCode] onChangeCodeVerifier value:', event.target.value);
-        setCodeVerifier(event.target.value);
+        setVerifierCode(event.target.value);
     }
 
-    const onVerifyCodeManual = (event) => {
+    const onVerifyCodeManual = (event: any) => {
         handlerEnterPress(event, () => {
             console.log('[ScanQrByCode] onVerifyCodeManual value:', event.target.value);
-            setCodeVerifier(event.target.value);
+            setVerifierCode(event.target.value);
         });
     }
 
     const onTryScanner = () => {
         console.log('[ScanQrByCode] try scanner')
-        setCodeVerifier('');
+        setVerifierCode('');
         setMode('verify-qr');
     }
 
     const onResetForm = () => {
         console.log('[ScanQrByCode] form reset')
-        setCode('');
-        setCodeVerifier('');
+        setAssetCode('');
+        setVerifierCode('');
         setMode('search');
     }
 
     const onFlipCamera = () => {
         console.log('[ScanQrByCode] onFlipCamera -> list camera and current selected', {listCamera, cameraId});
         const toggleCamera = listCamera.filter(item => item.deviceId !== cameraId);
-        console.log('[ScanQrByCode] onFlipCamera -> select new camera', {cameraId, newCamera: toggleCamera[0].deviceId});
+        console.log('[ScanQrByCode] onFlipCamera -> select new camera', {
+            cameraId,
+            newCamera: toggleCamera[0].deviceId
+        });
         setCameraId(toggleCamera[0].deviceId);
     }
 
     return (
-        <div className="center-page">
+        <>
             {
-                (mode === 'search') && <Search onChange={onChangeCode} onSubmit={onSubmitCode} onClickSearching={handleSearching} />
+                (mode !== 'verify-qr') && <div className="center-page">
+                    {
+                        (mode === 'search') &&
+						<Search onChange={onChangeCode} onSubmit={onSubmitCode} onClickSearching={handleSearching}/>
+                    }
+
+                    {
+                        (mode === 'verify-code') && <VerifyAssetCode
+							assetCode={assetCode} onChange={onChangeCodeVerifier} onVerify={onVerifyCodeManual}
+							onClickScanner={onTryScanner} onClickVerify={handleVerifyAudit}
+						/>
+                    }
+
+                    {
+                        (mode === 'result') &&
+						<Result result={result} onClickReset={onResetForm} onClickRetry={onTryScanner}/>
+                    }
+				</div>
             }
 
             {
                 (mode === 'verify-qr') && <VerifyQrCode
-                    loading={loading} assetCode={code} cameraId={cameraId}
-                    onScanSuccess={onScanSuccess} onScanError={onScanError}
-                    onClickFlipCamera={onFlipCamera} onClickManualMode={() => setMode('verify-code')}
-                />
+		            assetCode={assetCode} cameraId={cameraId}
+		            onScanSuccess={onScanSuccess} onScanError={onScanError}
+		            onClickFlipCamera={onFlipCamera} onClickManualMode={() => setMode('verify-code')}
+	            />
             }
-
-            {
-                (mode === 'verify-code') && <VerifyAssetCode
-                    assetCode={code} onChange={onChangeCodeVerifier} onVerify={onVerifyCodeManual}
-                    onClickScanner={onTryScanner} onClickVerify={handleVerifyAudit}
-                />
-            }
-
-            {
-                (mode === 'result') && <Result result={result} onClickReset={onResetForm} onClickRetry={onTryScanner} />
-            }
-        </div>
+        </>
     );
 }
 
