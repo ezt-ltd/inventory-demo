@@ -2,7 +2,7 @@ import React from 'react';
 import {Button, TextField} from "@mui/material";
 import PropTypes from "prop-types";
 
-const VerifyAssetCode = (props) => {
+const VerifyAssetCode = (props: any) => {
 	const {assetCode, onChange, onVerify, onClickScanner, onClickVerify} = props;
 	return (
 		<>

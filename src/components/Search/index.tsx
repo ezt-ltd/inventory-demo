@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import {Button, TextField} from "@mui/material";
 
-const Search = (props) => {
+const Search = (props: any) => {
 	const {onChange, onSubmit, onClickSearching} = props;
 	return (
 		<>

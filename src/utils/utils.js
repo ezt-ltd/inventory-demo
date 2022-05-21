@@ -22,6 +22,19 @@ async function injectDebugger() {
 	window.eruda && window.eruda.init();
 }
 
+const isES6 = () => {
+	let isES6 = false;
+	try {
+		const k = new Map();
+		isES6 = true;
+		console.log("ES6 supported!!", k);
+	} catch(err) {
+		console.log("ES6 not supported :(")
+	}
+	return isES6;
+}
+
 export {
-	injectDebugger
+	injectDebugger,
+	isES6
 }

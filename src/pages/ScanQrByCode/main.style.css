@@ -12,6 +12,24 @@
     text-align: center;
 }
 
+.fixed-top-bar {
+    display: none;
+}
+
+.fixed-bottom-bar {
+    display: none;
+}
+
+.floating-button {
+    display: none;
+}
+
 #btn-default {
     margin: .5em;
+}
+
+#camera-streaming {
+    width: 100%;
+    height: 100vh;
+    background: #000;
 }

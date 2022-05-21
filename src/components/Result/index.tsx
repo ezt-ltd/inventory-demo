@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import {Alert, Button} from "@mui/material";
 
-const Result = (props) => {
+const Result = (props: any) => {
 	const {result, onClickReset, onClickRetry} = props;
 	return (
 		<>

@@ -1,42 +1,24 @@
 import React, {useState} from 'react';
-import {LinearProgress, Snackbar} from "@mui/material";
+import './master.style.css';
 import ScanQrByCode from "../ScanQrByCode";
+// import {VariantType} from "notistack";
+// import {useNotify} from "../../custom-hooks/useNotify";
 
 const MasterPage = () => {
     const [loading, setLoading] = useState(false);
-    const [openSnackBar, setOpenSnackBar] = useState(false);
-    const [notify, setNotify] = useState('MasterPage');
+    // const notify = useNotify();
 
-    const handleOpenSnackBar = () => {
-        console.log('[ScanQrByCode] opening SnackBar');
-        setOpenSnackBar(true);
-    }
-
-    const handleCloseSnackBar = () => {
-        console.log('[ScanQrByCode] closing SnackBar');
-        setOpenSnackBar(false);
-    }
+    // const handleOpenSnackBar = (message?: string, variant?: VariantType) => {
+    //     console.log('[ScanQrByCode] SnackBar is opening');
+    //     notify.showNotify(message, variant);
+    // }
 
     const handleLoading = (event: boolean) => {
         console.log('[InventoryApp] loading:', event);
         setLoading(event);
     }
 
-    return (
-        <>
-            {loading && <LinearProgress/>}
-
-            <ScanQrByCode loading={loading} onLoading={handleLoading}/>
-
-            <Snackbar
-                key="top-center"
-                open={openSnackBar}
-                message={notify}
-                onClose={handleCloseSnackBar}
-                anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
-            />
-        </>
-    );
+    return <ScanQrByCode loading={loading} onLoading={handleLoading}/>;
 }
 
 export default MasterPage;
