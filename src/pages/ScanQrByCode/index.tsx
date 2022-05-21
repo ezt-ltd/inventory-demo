@@ -2,16 +2,20 @@ import React, {useEffect, useState} from 'react';
 import './main.style.css';
 import VerifyQrCode from "../../components/VerifyQrCode";
 import CustomDialog from "../../components/common/CustomDialog";
-import {TextField} from "@mui/material";
+import {Fab, TextField} from "@mui/material";
 import {useNotify} from "../../custom-hooks/useNotify";
+import {Replay, Clear, Camera, FlipCameraAndroid} from '@mui/icons-material';
 
 const ScanQrByCode = (props: any) => {
 
     const {onLoading} = props;
     const notify = useNotify();
 
+    const MIN_FAB = 2, MAX_FAB = 3;
+
     const [visibleDialog, setVisibleDialog] = useState(false);
     const [enableCamera, setEnableCamera] = useState(false);
+    const [numOfFab, setNumOfFab] = useState(2); // default 2 floating action button (as Fab)
     const [assetCode, setAssetCode] = useState('');
 
     const [listCamera, setListCamera] = useState<Array<any>>([]);
@@ -43,9 +47,20 @@ const ScanQrByCode = (props: any) => {
             });
     }
 
+    const handleTurnOnOffCamera = (onOff: boolean = false) => {
+        if (onOff) {
+            console.log(`[ScanQrByCode] camera is turn on, number of fab is increase`);
+            setNumOfFab(numOfFab >= MAX_FAB ? numOfFab : numOfFab + 1);
+        } else {
+            console.log(`[ScanQrByCode] camera is turn off, number of fab is decrease`);
+            setNumOfFab(numOfFab <= MIN_FAB ? numOfFab : numOfFab - 1);
+        }
+        setEnableCamera(onOff);
+    }
+
     const handleSearching = () => {
         console.log('[ScanQrByCode] on call searching');
-        setEnableCamera(true);
+        handleTurnOnOffCamera(true);
         setVisibleDialog(false);
     }
 
@@ -60,7 +75,38 @@ const ScanQrByCode = (props: any) => {
     }
 
     const handleCloseDialog = () => {
+        notify.showNotify('Test', 'success');
         console.log('[ScanQrByCode] close dialog was denied')
+    }
+
+    const handleRetry = () => {
+        console.log('[ScanQrByCode] user action to retry');
+        setAssetCode('');
+        handleTurnOnOffCamera(false);
+    }
+
+    const handleStartScan = () => {
+        console.log('[ScanQrByCode] camera is enabled');
+        handleTurnOnOffCamera(true);
+    }
+
+    const handleStopScan = () => {
+        console.log('[ScanQrByCode] camera is disabled');
+        handleTurnOnOffCamera(false);
+    }
+
+    const handleFlipCamera = () => {
+        if (listCamera.length === 0 || !cameraId) {
+            console.log('[ScanQrByCode] Camera permission is required!');
+            return;
+        }
+        console.log('[ScanQrByCode] handleFlipCamera -> list camera and current selected', {listCamera, cameraId});
+        const toggleCamera = listCamera.filter(item => item.deviceId !== cameraId);
+        console.log('[ScanQrByCode] handleFlipCamera -> select new camera', {
+            cameraId,
+            newCamera: toggleCamera[0].deviceId
+        });
+        setCameraId(toggleCamera[0].deviceId);
     }
 
     const onChangeCode = (event: any) => {
@@ -84,7 +130,10 @@ const ScanQrByCode = (props: any) => {
         }
         const qrResult = data.text;
         console.log('[ScanQrByCode] onScanSuccess result:', {qrResult, data});
-        handleVerifyAudit(qrResult);
+        setTimeout(() => {
+            console.log('[ScanQrByCode] delay 2 seconds before check');
+            handleVerifyAudit(qrResult);
+        }, 2000); // delay 2 seconds
     }
 
     const onScanError = (error: any) => {
@@ -92,20 +141,6 @@ const ScanQrByCode = (props: any) => {
         //     console.log('[ScanQrByCode] onScanError result:', {error});
         //     setCodeVerifier('');
         // }
-    }
-
-    const onFlipCamera = () => {
-        if (listCamera.length === 0 || !cameraId) {
-            console.log('[ScanQrByCode] Camera permission is required!');
-            return;
-        }
-        console.log('[ScanQrByCode] onFlipCamera -> list camera and current selected', {listCamera, cameraId});
-        const toggleCamera = listCamera.filter(item => item.deviceId !== cameraId);
-        console.log('[ScanQrByCode] onFlipCamera -> select new camera', {
-            cameraId,
-            newCamera: toggleCamera[0].deviceId
-        });
-        setCameraId(toggleCamera[0].deviceId);
     }
 
     useEffect(() => {
@@ -124,10 +159,29 @@ const ScanQrByCode = (props: any) => {
 
     return (
         <>
-            <VerifyQrCode
-                assetCode={assetCode} cameraId={cameraId} cameraStatus={enableCamera}
-                onScanSuccess={onScanSuccess} onScanError={onScanError} onClickFlipCamera={onFlipCamera}
-            />
+            <div className="floating-wrapper" style={{marginTop: `calc(100vh - ${(66 * numOfFab) + 10}px)`}}>
+                {
+                    enableCamera && <div className="floating-button">
+		                <Fab aria-label="flip-camera" color="default" onClick={handleFlipCamera}>
+			                <FlipCameraAndroid/>
+		                </Fab>
+	                </div>
+                }
+                <div className="floating-button">
+                    <Fab aria-label="retry" color="primary" onClick={handleRetry}>
+                        <Replay/>
+                    </Fab>
+                </div>
+                <div className="floating-button">
+                    {
+                        enableCamera ? <Fab aria-label="stop" color="error" onClick={handleStopScan}>
+                            <Clear/>
+                        </Fab> : <Fab aria-label="start" color="warning" onClick={handleStartScan}>
+                            <Camera/>
+                        </Fab>
+                    }
+                </div>
+            </div>
 
             <CustomDialog
                 visible={visibleDialog} onClose={handleCloseDialog}
@@ -139,6 +193,11 @@ const ScanQrByCode = (props: any) => {
                         placeholder="Nhập mã trang bị" onChange={onChangeCode}
                     />
                 }}
+            />
+
+            <VerifyQrCode
+                cameraId={cameraId} cameraStatus={enableCamera} onClickFlipCamera={handleFlipCamera}
+                onScanSuccess={onScanSuccess} onScanError={onScanError}
             />
         </>
     );

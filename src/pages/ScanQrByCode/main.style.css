@@ -20,8 +20,13 @@
     display: none;
 }
 
+.floating-wrapper {
+    position: absolute;
+    margin-left: calc(100vw - 76px);
+}
+
 .floating-button {
-    display: none;
+    margin: 10px;
 }
 
 #btn-default {
