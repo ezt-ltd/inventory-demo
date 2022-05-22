@@ -156,7 +156,7 @@ const ScanCode = (props: any) => {
 
     return (
         <>
-            <div className="floating-wrapper" style={{marginTop: `calc(100vh - ${(66 * numOfFab) + 60}px)`}}>
+            <div className="floating-wrapper" style={{marginTop: `calc(100vh - ${(66 * numOfFab) + 74}px)`}}>
                 {
                     enableCamera && <div className="floating-button">
 		                <Fab aria-label="flip-camera" color="default" onClick={handleFlipCamera}>
