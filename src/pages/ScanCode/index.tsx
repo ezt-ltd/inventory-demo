@@ -128,6 +128,7 @@ const ScanCode = (props: any) => {
         if (!data) {
             return;
         }
+        handleTurnOnOffCamera(false);
         const qrResult = data.text;
         console.log('[ScanCode] onScanSuccess result:', {qrResult, data});
         handleVerifyAudit(qrResult);
@@ -155,7 +156,7 @@ const ScanCode = (props: any) => {
 
     return (
         <>
-            <div className="floating-wrapper" style={{marginTop: `calc(100vh - ${(66 * numOfFab) + 10}px)`}}>
+            <div className="floating-wrapper" style={{marginTop: `calc(100vh - ${(66 * numOfFab) + 60}px)`}}>
                 {
                     enableCamera && <div className="floating-button">
 		                <Fab aria-label="flip-camera" color="default" onClick={handleFlipCamera}>
@@ -180,7 +181,7 @@ const ScanCode = (props: any) => {
             </div>
 
             <CustomDialog
-                visible={false} onClose={handleCloseDialog}
+                visible={visibleDialog} onClose={handleCloseDialog}
                 dialogInfo={{
                     title: 'Tìm kiếm',
                     buttons: [{label: 'Tìm kiếm', onClick: handleSearching}],

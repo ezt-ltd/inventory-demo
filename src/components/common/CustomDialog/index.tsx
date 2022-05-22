@@ -24,7 +24,7 @@ const CustomDialog = (props: any) => {
 
     return (
         <>
-            <Dialog open={open} onClose={handleClose}>
+            <Dialog fullWidth open={open} onClose={handleClose}>
                 <DialogTitle>{dialogInfo.title}</DialogTitle>
                 <DialogContent>
                     {
