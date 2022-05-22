@@ -36,7 +36,7 @@ const VerifyQrCode = (props) => {
 		<div id="camera-streaming" style={{width: screen.availWidth, height: screen.availHeight}} onClick={handleFlipCamera}>
 			<QrReader
 				delay={2000}
-				style={{height: '100%', width: '100%'}}
+				style={{height: '100%', width: '100%', objectFit: 'fill'}}
 				onError={onScanError}
 				onScan={onScanSuccess}
 				constraints={cameraConfig}
