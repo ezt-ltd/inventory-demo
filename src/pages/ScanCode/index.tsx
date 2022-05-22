@@ -1,12 +1,12 @@
 import React, {useEffect, useState} from 'react';
 import './main.style.css';
-import VerifyQrCode from "../../components/VerifyQrCode";
+import QrScanner from "../../components/QrScanner";
 import CustomDialog from "../../components/common/CustomDialog";
 import {Fab, TextField} from "@mui/material";
 import {useNotify} from "../../custom-hooks/useNotify";
 import {Replay, Clear, Camera, FlipCameraAndroid} from '@mui/icons-material';
 
-const ScanQrByCode = (props: any) => {
+const ScanCode = (props: any) => {
 
     const {onLoading} = props;
     const notify = useNotify();
@@ -39,7 +39,7 @@ const ScanQrByCode = (props: any) => {
                 setTimeout(() => {
                     onLoading(false);
                 }, 2000);
-                console.log('[ScanQrByCode] camera infos:', {cameraId: devices[0].deviceId, devices, loading: false});
+                console.log('[ScanCode] camera infos:', {cameraId: devices[0].deviceId, devices, loading: false});
             })
             .catch((error) => {
                 console.log(error);
@@ -49,24 +49,24 @@ const ScanQrByCode = (props: any) => {
 
     const handleTurnOnOffCamera = (onOff: boolean = false) => {
         if (onOff) {
-            console.log(`[ScanQrByCode] camera is turn on, number of fab is increase`);
+            console.log(`[ScanCode] camera is turn on, number of fab is increase`);
             setNumOfFab(numOfFab >= MAX_FAB ? numOfFab : numOfFab + 1);
         } else {
-            console.log(`[ScanQrByCode] camera is turn off, number of fab is decrease`);
+            console.log(`[ScanCode] camera is turn off, number of fab is decrease`);
             setNumOfFab(numOfFab <= MIN_FAB ? numOfFab : numOfFab - 1);
         }
         setEnableCamera(onOff);
     }
 
     const handleSearching = () => {
-        console.log('[ScanQrByCode] on call searching');
+        console.log('[ScanCode] on call searching');
         handleTurnOnOffCamera(true);
         setVisibleDialog(false);
     }
 
     const handleVerifyAudit = (verifyCode: string = '') => {
         const verifyResult = verifier(assetCode, verifyCode);
-        console.log('[ScanQrByCode] verify result:', {assetCode, verifyCode, verifyResult});
+        console.log('[ScanCode] verify result:', {assetCode, verifyCode, verifyResult});
         if (verifyResult) {
             notify.showNotify('MATCHED', 'success');
         } else {
@@ -76,33 +76,33 @@ const ScanQrByCode = (props: any) => {
 
     const handleCloseDialog = () => {
         notify.showNotify('Test', 'success');
-        console.log('[ScanQrByCode] close dialog was denied')
+        console.log('[ScanCode] close dialog was denied')
     }
 
     const handleRetry = () => {
-        console.log('[ScanQrByCode] user action to retry');
+        console.log('[ScanCode] user action to retry');
         setAssetCode('');
         handleTurnOnOffCamera(false);
     }
 
     const handleStartScan = () => {
-        console.log('[ScanQrByCode] camera is enabled');
+        console.log('[ScanCode] camera is enabled');
         handleTurnOnOffCamera(true);
     }
 
     const handleStopScan = () => {
-        console.log('[ScanQrByCode] camera is disabled');
+        console.log('[ScanCode] camera is disabled');
         handleTurnOnOffCamera(false);
     }
 
     const handleFlipCamera = () => {
         if (listCamera.length === 0 || !cameraId) {
-            console.log('[ScanQrByCode] Camera permission is required!');
+            console.log('[ScanCode] Camera permission is required!');
             return;
         }
-        console.log('[ScanQrByCode] handleFlipCamera -> list camera and current selected', {listCamera, cameraId});
+        console.log('[ScanCode] handleFlipCamera -> list camera and current selected', {listCamera, cameraId});
         const toggleCamera = listCamera.filter(item => item.deviceId !== cameraId);
-        console.log('[ScanQrByCode] handleFlipCamera -> select new camera', {
+        console.log('[ScanCode] handleFlipCamera -> select new camera', {
             cameraId,
             newCamera: toggleCamera[0].deviceId
         });
@@ -110,15 +110,15 @@ const ScanQrByCode = (props: any) => {
     }
 
     const onChangeCode = (event: any) => {
-        console.log('[ScanQrByCode] onChangeCode value:', event.target.value);
+        console.log('[ScanCode] onChangeCode value:', event.target.value);
         setAssetCode(event.target.value);
     }
 
     const verifier = (source = '', value = '') => {
-        console.log('[ScanQrByCode] searching:', {source, value});
+        console.log('[ScanCode] searching:', {source, value});
         const verifyKey = source.replace(/#/g, '');
         const testCase = new RegExp(`(${verifyKey})`, 'i');
-        console.log('[ScanQrByCode] verify value:', {
+        console.log('[ScanCode] verify value:', {
             result: testCase.test(value), algorithm: `(${verifyKey})`
         });
         return testCase.test(value);
@@ -129,30 +129,26 @@ const ScanQrByCode = (props: any) => {
             return;
         }
         const qrResult = data.text;
-        console.log('[ScanQrByCode] onScanSuccess result:', {qrResult, data});
-        setTimeout(() => {
-            console.log('[ScanQrByCode] delay 2 seconds before check');
-            handleVerifyAudit(qrResult);
-        }, 2000); // delay 2 seconds
+        console.log('[ScanCode] onScanSuccess result:', {qrResult, data});
+        handleVerifyAudit(qrResult);
     }
 
     const onScanError = (error: any) => {
-        // if (error) {
-        //     console.log('[ScanQrByCode] onScanError result:', {error});
-        //     setCodeVerifier('');
-        // }
+        if (error) {
+            console.log('[ScanCode] onScanError error:', {error});
+        }
     }
 
     useEffect(() => {
         cameraProcessing().finally(() => {
-            console.log('[ScanQrByCode] camera initialed!');
+            console.log('[ScanCode] camera initialed!');
         });
         // eslint-disable-next-line
     }, []);
 
     useEffect(() => {
         if (!assetCode) {
-            console.log('[ScanQrByCode] assetCode not found!');
+            console.log('[ScanCode] assetCode not found!');
             setVisibleDialog(true);
         }
     }, [assetCode]);
@@ -184,7 +180,7 @@ const ScanQrByCode = (props: any) => {
             </div>
 
             <CustomDialog
-                visible={visibleDialog} onClose={handleCloseDialog}
+                visible={false} onClose={handleCloseDialog}
                 dialogInfo={{
                     title: 'Tìm kiếm',
                     buttons: [{label: 'Tìm kiếm', onClick: handleSearching}],
@@ -195,7 +191,7 @@ const ScanQrByCode = (props: any) => {
                 }}
             />
 
-            <VerifyQrCode
+            <QrScanner
                 cameraId={cameraId} cameraStatus={enableCamera} onClickFlipCamera={handleFlipCamera}
                 onScanSuccess={onScanSuccess} onScanError={onScanError}
             />
@@ -203,4 +199,4 @@ const ScanQrByCode = (props: any) => {
     );
 }
 
-export default ScanQrByCode;
+export default ScanCode;

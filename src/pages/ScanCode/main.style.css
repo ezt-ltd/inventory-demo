@@ -32,9 +32,3 @@
 #btn-default {
     margin: .5em;
 }
-
-#camera-streaming {
-    width: 100%;
-    height: 100vh;
-    background: #000;
-}
